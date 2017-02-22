@@ -323,10 +323,22 @@ define( [
 		},
 
 		replaceFieldKey: function( dataModel, keyModel, settingModel ) {
-			var oldKey = this.getFieldKeyFormat( keyModel._previousAttributes[ 'key' ] );
+            var oldKey = this.getFieldKeyFormat( keyModel._previousAttributes[ 'key' ] );
 			var newKey = this.getFieldKeyFormat( keyModel.get( 'key' ) );
 			var settingName = settingModel.get( 'name' );
 			var oldVal = dataModel.get( settingName );
+            if(settingName == 'calculations' && 'undefined' != typeof(dataModel.get('calculations'))) {
+                var calcModel = dataModel.get( 'calculations' );
+                calcModel.each( function( model ) {
+                    oldVal = model.get( 'eq' );
+                    if ( 'string' == typeof oldVal ) {
+                        var re = new RegExp( oldKey, 'g' );
+                        newVal = oldVal.replace( re, newKey );
+                        model.set( 'eq', newVal );
+                    }
+                } );
+                return false;
+            }
 			if ( 'string' == typeof oldVal ) {
 				var re = new RegExp( oldKey, 'g' );
 				newVal = oldVal.replace( re, newKey );
