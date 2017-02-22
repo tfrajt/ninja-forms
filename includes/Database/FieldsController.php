@@ -26,11 +26,21 @@ final class NF_Database_FieldsController
 
     public function run()
     {
+        $this->db->hide_errors();
+        
         /* FIELDS */
         $this->parse_fields();
-        $this->db->query( $this->get_insert_fields_query() );
-        $this->db->query( $this->get_update_fields_query() );
-        $this->update_new_field_ids();
+        
+        $insert_fields_query = $this->get_insert_fields_query();
+        if( ! empty( $insert_fields_query ) ){
+            $this->db->query( $insert_fields_query );
+            $this->update_new_field_ids();
+        }
+        
+        $update_fields_query = $this->get_update_fields_query();
+        if( ! empty( $update_fields_query ) ){
+            $this->db->query( $update_fields_query );
+        }
 
         /* FIELD META */
         $this->parse_field_meta();
