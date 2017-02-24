@@ -337,6 +337,8 @@ define( [
                         var re = new RegExp( oldCalcKey, 'g' );
                         var newVal = oldVal.replace( re, newCalcKey );
                         re = new RegExp( oldKey, 'g' );
+                        // TODO: We won't need this second replace when we no longer
+                        // have to append :calc to merge tags.
                         newVal = newVal.replace( re, newKey );
                         model.set( 'eq', newVal );
                     }

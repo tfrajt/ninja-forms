@@ -49,5 +49,10 @@ final class NF_MergeTags_Calcs extends NF_Abstracts_MergeTags
             'calc_value' => number_format( $calculated_value, 2 )
         );
     }
+    
+    public function get_calc_value( $key )
+    {
+        return $this->merge_tags[ $key ][ 'calc_value' ];
+    }
 
 } // END CLASS NF_MergeTags_Calcs
