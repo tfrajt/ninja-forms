@@ -330,10 +330,14 @@ define( [
             if(settingName == 'calculations' && 'undefined' != typeof(dataModel.get('calculations'))) {
                 var calcModel = dataModel.get( 'calculations' );
                 calcModel.each( function( model ) {
+                    var oldCalcKey = oldKey.slice( 0, (oldKey.length - 1) ) + ':calc}';
+                    var newCalcKey = newKey.slice( 0, (newKey.length - 1 ) ) + ':calc}';
                     oldVal = model.get( 'eq' );
-                    if ( 'string' == typeof oldVal ) {
-                        var re = new RegExp( oldKey, 'g' );
-                        newVal = oldVal.replace( re, newKey );
+                    if ( 'string' == typeof( oldVal ) ) {
+                        var re = new RegExp( oldCalcKey, 'g' );
+                        var newVal = oldVal.replace( re, newCalcKey );
+                        re = new RegExp( oldKey, 'g' );
+                        newVal = newVal.replace( re, newKey );
                         model.set( 'eq', newVal );
                     }
                 } );
