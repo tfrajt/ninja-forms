@@ -13,10 +13,15 @@ final class NF_MergeTags_Fields extends NF_Abstracts_MergeTags
         parent::__construct();
         $this->title = __( 'Fields', 'ninja-forms' );
         $this->merge_tags = Ninja_Forms()->config( 'MergeTagsFields' );
+
+        add_filter( 'ninja_forms_calc_setting',  array( $this, 'calc_replace' ) );
     }
 
     public function __call($name, $arguments)
     {
+        if(isset($arguments[0]['calc'])) {
+            return $this->merge_tags[ $name ][ 'calc_value' ];
+        }
         return $this->merge_tags[ $name ][ 'field_value' ];
     }
 
@@ -58,6 +63,7 @@ final class NF_MergeTags_Fields extends NF_Abstracts_MergeTags
 
     public function add_field( $field )
     {
+        //print_r($field);
         $hidden_field_types = apply_filters( 'nf_sub_hidden_field_types', array() );
         if( in_array( $field[ 'type' ], $hidden_field_types ) ) return;
 
@@ -74,28 +80,32 @@ final class NF_MergeTags_Fields extends NF_Abstracts_MergeTags
 
         if( isset( $field[ 'key' ] ) ) {
             $field_key =  $field[ 'key' ];
+            $calc_value = apply_filters( 'ninja_forms_merge_tag_calc_value_' . $field[ 'type' ], $field['value'], $field );
 
             // Add Field Key Callback
             $callback = 'field_' . $field_key;
-            $this->add( $callback, $field_key, '{field:' . $field_key . '}', $value );
+            $this->add( $callback, $field_key, '{field:' . $field_key . '}', $value, $calc_value );
 
             // Add Field by Key for All Fields
             $this->merge_tags[ 'all_fields_by_key' ][ 'fields' ][ $field_key ] = $field;
 
             // Add Field Calc Callabck
+            if( '' == $calc_value ) $calc_value = '0';
+            //var_dump($calc_value);
+            //echo('myspace');
             $callback = 'field_' . $field_key . '_calc';
-            $calc_value = apply_filters( 'ninja_forms_merge_tag_calc_value_' . $field[ 'type' ], $field['value'], $field );
-            $this->add( $callback, $field_key, '{field:' . $field_key . ':calc}', $calc_value );
+            $this->add( $callback, $field_key, '{field:' . $field_key . ':calc}', $calc_value, $calc_value );
         }
     }
 
-	public function add( $callback, $id, $tag, $value )
+	public function add( $callback, $id, $tag, $value, $calc_value = false )
 	{
 		$this->merge_tags[ $callback ] = array(
 			'id'          => $id,
 			'tag'         => $tag,
 			'callback'    => $callback,
 			'field_value' => $value,
+            'calc_value'  => ($calc_value === false) ? $value : $calc_value,
 		);
 	}
 
@@ -126,6 +136,38 @@ final class NF_MergeTags_Fields extends NF_Abstracts_MergeTags
             return 0;
         }
         return ( $a[ 'order' ] < $b[ 'order' ] ) ? -1 : 1;
+    }
+    
+    public function calc_replace( $subject ) {
+        if( is_array( $subject ) ){
+            foreach( $subject as $i => $s ){
+                $subject[ $i ] = $this->replace( $s );
+            }
+            return $subject;
+        }
+        //print_r($subject);
+
+        preg_match_all("/{(.*?)}/", $subject, $matches );
+
+        if( empty( $matches[0] ) ) return $subject;
+
+        foreach( $this->merge_tags as $merge_tag ){
+            
+            if( ! in_array( $merge_tag[ 'tag' ], $matches[0] ) ) continue;
+
+            if( ! isset($merge_tag[ 'callback' ])) continue;
+            //print_r($merge_tag);
+            //echo( ' = ' );
+
+            $replace = ( is_callable( array( $this, $merge_tag[ 'callback' ] ) ) ) ? $this->{$merge_tag[ 'callback' ]}(array('calc' => true)) : '0';
+            //print_r($replace);
+            //echo('  myspace  ');
+            if( '' == $replace ) $replace = '0';
+
+            $subject = str_replace( $merge_tag[ 'tag' ], $replace, $subject );
+        }
+
+        return $subject;
     }
 
 } // END CLASS NF_MergeTags_Fields

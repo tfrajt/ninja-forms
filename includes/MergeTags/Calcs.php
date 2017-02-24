@@ -13,6 +13,7 @@ final class NF_MergeTags_Calcs extends NF_Abstracts_MergeTags
     {
         parent::__construct();
         $this->title = __( 'Calculations', 'ninja-forms' );
+        add_filter( 'ninja_forms_calc_setting',  array( $this, 'replace' ) );
     }
 
     public function __call($name, $arguments)
