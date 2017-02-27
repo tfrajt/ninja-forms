@@ -18,6 +18,10 @@ return apply_filters( 'ninja_forms_from_calculation_settings', array(
                 'header'    => __( 'Variable Name', 'ninja-forms' ),
                 'default'   => '',
             ),
+            /*'dec'           => array(
+                'header'    => __( 'Round', 'ninja-forms' ),
+                'default'   => '2',
+            ),*/
             'eq'            => array(
                 'header'    => __( 'Equation', 'ninja-forms' ),
                 'default'   => '',
