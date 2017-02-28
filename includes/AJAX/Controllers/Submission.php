@@ -13,9 +13,12 @@ class NF_AJAX_Controllers_Submission extends NF_Abstracts_Controller
     public function __construct()
     {
         if( isset( $_POST[ 'nf_resume' ] ) && isset( $_COOKIE[ 'nf_wp_session' ] ) ){
+            $this->_data[ 'resume' ] = $_POST[ 'nf_resume' ];
             add_action( 'ninja_forms_loaded', array( $this, 'resume' ) );
             return;
         }
+
+        $this->_data[ 'resume' ] = false;
 
         if( isset( $_POST['formData'] ) ) {
             $this->_form_data = json_decode( $_POST['formData'], TRUE  );
@@ -65,7 +68,6 @@ class NF_AJAX_Controllers_Submission extends NF_Abstracts_Controller
         $this->_form_data = Ninja_Forms()->session()->get( 'nf_processing_form_data' );
         $this->_form_cache = Ninja_Forms()->session()->get( 'nf_processing_form_cache' );
         $this->_data = Ninja_Forms()->session()->get( 'nf_processing_data' );
-        $this->_data[ 'resume' ] = $_POST[ 'nf_resume' ];
 
         $this->_form_id = $this->_data[ 'form_id' ];
 
@@ -157,12 +159,14 @@ class NF_AJAX_Controllers_Submission extends NF_Abstracts_Controller
             $field = array_merge( $field, $field[ 'settings' ] );
 
             /** Validate the Field */
-            if( $validate_fields ){
+            if( $validate_fields && ! $this->_data[ 'resume' ] ){
                 $this->validate_field( $field );
             }
 
             /** Process the Field */
-            $this->process_field( $field );
+            if( ! $this->_data[ 'resume' ] ) {
+                $this->process_field($field);
+            }
             $field = array_merge( $field, $this->_form_data[ 'fields' ][ $field_id ] );
 
             /** Populate Field Merge Tag */
