@@ -27,7 +27,7 @@ define( [], function() {
 	    	return {
 	    		renderTitle: function(){
 	    			var formData = nfRadio.channel( 'app' ).request( 'get:formModel' );
-	    			return formData.get( 'settings' ).get( 'title' );
+	    			return _.escape( formData.get( 'settings' ).get( 'title' ) );
 				},
 			}
 		}
